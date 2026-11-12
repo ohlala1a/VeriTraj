@@ -1,5 +1,3 @@
-; family: heat
-; task: put a hot mug in cabinet 1.
 (define (problem heat-mug-01)
   (:domain veritraj-alfworld)
   (:objects

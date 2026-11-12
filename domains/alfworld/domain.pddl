@@ -1,7 +1,3 @@
-; Symbolic interface for ALFWorld-style household tasks.
-; Receptacles are either openable (cabinet, drawer, fridge, microwave, safe)
-; or always open (countertop, table, shelf, ...). Every receptacle that can
-; hold items must be open; surfaces are asserted open once observed.
 (define (domain veritraj-alfworld)
   (:requirements :strips :typing)
   (:types agent place item lamp - object

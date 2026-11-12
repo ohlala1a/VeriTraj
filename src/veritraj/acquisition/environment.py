@@ -1,11 +1,4 @@
-"""Executable environment interface used by the Adjudicator.
-
-The adjudicator never trusts a candidate domain: it asks the environment
-whether an action is applicable in a state and what the successor is.
-`ReferenceEnvironment` answers from a reference PDDL model and is what the
-offline demo uses; for a real simulator, implement `Environment` with its
-reset-to-state / step API.
-"""
+"""Adjudication protocol and reference PDDL execution."""
 
 from __future__ import annotations
 

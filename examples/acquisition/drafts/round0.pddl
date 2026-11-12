@@ -1,4 +1,3 @@
-; Builder draft, round 0. First draft from documentation and transitions.
 (define (domain veritraj-alfworld)
   (:requirements :strips :typing)
   (:types agent place item lamp - object

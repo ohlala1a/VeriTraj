@@ -1,4 +1,4 @@
-"""End-to-end labels on the example trajectories, and incremental == recompute."""
+"""Trajectory verification and incremental/recompute equivalence."""
 
 import pytest
 

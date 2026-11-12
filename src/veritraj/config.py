@@ -1,9 +1,4 @@
-"""Config loading and component wiring.
-
-`build_components(cfg_path)` returns everything a worker needs (domain,
-adapter, interface, store config, tokenizer, progress factory). Paths inside
-the YAML are resolved against the repository root (the parent of configs/).
-"""
+"""Config loading and component wiring."""
 
 from __future__ import annotations
 
@@ -74,7 +69,14 @@ def build_components(cfg_path: str | Path | None = None, *, policy: str | None =
                      tokenizer: str | None = None) -> Components:
     cfg = load_config(cfg_path)
     domain = load_domain(resolve(cfg, cfg["domain"]))
-    adapter = build_adapter(cfg["adapter"], policy=policy, resolver=resolver)
+    adapter_cfg = cfg["adapter"]
+    if adapter_cfg.get("kind", "alfworld") == "cyberbattle":
+        from .adapters.cyberbattle import CyberBattleAdapter
+        adapter = CyberBattleAdapter()
+    elif adapter_cfg.get("kind", "alfworld") == "alfworld":
+        adapter = build_adapter(adapter_cfg, policy=policy, resolver=resolver)
+    else:
+        raise ValueError("Unknown observation adapter")
     interface = ActionInterface(domain, InterfaceConfig.from_dict(cfg.get("interface")))
     store_cfg = StoreConfig.from_dict(cfg.get("store"))
     tok = make_tokenizer(tokenizer or cfg.get("tokenizer"))

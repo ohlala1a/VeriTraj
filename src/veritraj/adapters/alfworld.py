@@ -1,20 +1,4 @@
-"""Observation adapter P_obs for ALFWorld-style text.
-
-Maps one observation to a Delta of typed facts. The adapter is deliberately
-conservative: a mention whose class cannot be resolved, or a sentence that
-matches no template, produces no fact, so the corresponding facts stay
-unknown. Three recovery policies differ only in how unresolved mentions are
-handled:
-
-  conservative  exact templates + alias lexicon only
-  rule_norm     also singularizes, fuzzy-matches class names (difflib) and
-                rewrites common paraphrases before matching
-  llm_impute    rule_norm, then asks an LLM resolver for the remaining
-                mentions (needs an `llm.ChatClient`)
-
-Listings ("On the countertop 1, you see ...") are treated as complete for that
-receptacle: items previously believed there but not listed become false.
-"""
+"""Observation adapter P_obs for ALFWorld-style text."""
 
 from __future__ import annotations
 
@@ -116,7 +100,6 @@ class AlfworldAdapter:
         self._cache: dict[str, str | None] = {}
         self.stats = GroundingStats()
 
-    # -- mention resolution -----------------------------------------------
     def resolve(self, mention: str) -> tuple[str | None, str | None]:
         """Return (object_name, class) or (None, None) if unresolved."""
         self.stats.mentions += 1
@@ -151,7 +134,6 @@ class AlfworldAdapter:
         self._cache[cls] = out
         return out
 
-    # -- grounding ---------------------------------------------------------
     def initial(self) -> Delta:
         d = Delta(types={ROOM: "room"})
         d.add.append(Atom("at", (AGENT, ROOM)))

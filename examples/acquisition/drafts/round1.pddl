@@ -1,4 +1,3 @@
-; Builder draft, round 1. Repaired after round-0 feedback.
 (define (domain veritraj-alfworld)
   (:requirements :strips :typing)
   (:types agent place item lamp - object

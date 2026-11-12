@@ -21,8 +21,8 @@ def test_initial_observation_types_receptacles(comps):
     assert s.types["microwave_1"] == "receptacle"
     assert s.holds(Atom("openable", ("microwave_1",)))
     assert s.holds(Atom("can-heat", ("microwave_1",)))
-    assert s.holds(Atom("open", ("countertop_1",)))          # always-open surface
-    assert s.value(Atom("open", ("microwave_1",))) is None   # unknown until observed
+    assert s.holds(Atom("open", ("countertop_1",)))
+    assert s.value(Atom("open", ("microwave_1",))) is None
     assert s.holds(Atom("at", ("agent", "room_1"))) and s.holds(Atom("handempty", ()))
 
 

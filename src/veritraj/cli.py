@@ -38,7 +38,6 @@ def _table(rows: list[dict]) -> str:
     return "\n".join([line, sep, *body])
 
 
-# -- commands -------------------------------------------------------------------
 def cmd_check_domain(a) -> int:
     from .pddl import check_domain, check_problem, load_domain, load_problem
     from .planner import gbfs_plan
@@ -193,9 +192,14 @@ def cmd_acquire(a) -> int:
     from .acquisition import FileBuilder, LLMBuilder, LLMChallenger, acquire
     from .config import build_components
     from .ops import acquisition_setup, make_adjudicators
+    from .acquisition.logging import AcquisitionLogger, TranscriptClient
 
     comps = build_components(a.config, progress=False)
-    setup = acquisition_setup(comps, _load(a.trajectories))
+    from .config import resolve
+    from .pddl import load_problem
+    acceptance = ([load_problem(resolve(comps.cfg, path)) for path in a.acceptance_problems]
+                  if a.acceptance_problems is not None else None)
+    setup = acquisition_setup(comps, _load(a.trajectories), acceptance_problems=acceptance)
     dev, acc, challenger = make_adjudicators(setup)
     llm_ch = None
     if a.drafts:
@@ -204,14 +208,20 @@ def cmd_acquire(a) -> int:
         from .llm import OpenAICompatibleClient
 
         client = OpenAICompatibleClient.from_env()
+        if a.out:
+            client = TranscriptClient(client, Path(a.out) / "builder_calls")
         docs = Path(a.docs).read_text()
         iface = "\n".join(f"- {n}({', '.join(t for _, t in s.params)})" for n, s in comps.domain.actions.items())
         builder = LLMBuilder(client, docs, iface, setup.transitions)
         if a.llm_challenger:
-            llm_ch = LLMChallenger(OpenAICompatibleClient.from_env("VERITRAJ_CHALLENGER"), setup.env, setup.objects)
+            challenger_client = OpenAICompatibleClient.from_env("VERITRAJ_CHALLENGER")
+            if a.out:
+                challenger_client = TranscriptClient(challenger_client, Path(a.out) / "challenger_calls")
+            llm_ch = LLMChallenger(challenger_client, setup.env, setup.objects)
     print(f"development transitions: {len(setup.transitions)}, dev problems: {len(setup.dev_problems)}, "
           f"acceptance problems: {len(setup.acceptance_problems)}")
-    res = acquire(builder, challenger, dev, setup.transitions, acc, a.rounds, llm_ch)
+    callback = AcquisitionLogger(a.out, builder) if a.out else None
+    res = acquire(builder, challenger, dev, setup.transitions, acc, a.rounds, llm_ch, callback)
     for r in res.rounds:
         print(f"round {r['round']}: parse={r['parse']} trace={r['trace']}% probes={r['probes']}% "
               f"plan={r['plan']}% execute={r['execute']}% mismatches={r['mismatches']}")
@@ -252,7 +262,6 @@ def cmd_make_tasks(a) -> int:
     return 0
 
 
-# -- parser ---------------------------------------------------------------------
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="veritraj", description=__doc__)
     p.add_argument("--version", action="version", version=__version__)
@@ -316,6 +325,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--llm-challenger", action="store_true", help="add LLM probes (VERITRAJ_CHALLENGER_* env vars)")
     s.add_argument("--docs", default="examples/acquisition/task_documentation.md")
     s.add_argument("--rounds", type=int, default=3)
+    s.add_argument("--acceptance-problems", nargs="*")
     s.add_argument("--out")
     s.set_defaults(fn=cmd_acquire)
 

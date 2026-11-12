@@ -1,8 +1,4 @@
-"""Core PDDL data model (STRIPS + typing + negative preconditions).
-
-Atoms are immutable and hashable, so they can live directly in fact stores
-and caches. Action schemas keep variables as strings starting with '?'.
-"""
+"""Core PDDL data model (STRIPS + typing + negative preconditions)."""
 
 from __future__ import annotations
 

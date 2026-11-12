@@ -1,13 +1,4 @@
-"""Builder-Challenger loop (Algorithm 2).
-
-  D_0 <- Build(d, U, E_dev)
-  for k = 0..K-1:
-      q_k <- Challenge(D_k)            probes (deterministic + optional LLM)
-      f_k <- Adjudicate(D_k, q_k)      reproducible mismatches only
-      if D_k passes and f_k is empty: break
-      D_{k+1} <- Build(..., f_k)
-  return D_k only if the final acceptance test (held-out problems) passes
-"""
+"""Iterative domain construction, challenge probes and acceptance checks."""
 
 from __future__ import annotations
 
@@ -28,7 +19,9 @@ class AcquisitionResult:
 
 def acquire(builder: Builder, challenger: DeterministicChallenger, adjudicator: Adjudicator,
             transitions: list[DevTransition], acceptance: Adjudicator | None = None, rounds: int = 3,
-            llm_challenger: LLMChallenger | None = None) -> AcquisitionResult:
+            llm_challenger: LLMChallenger | None = None, round_callback=None) -> AcquisitionResult:
+    if rounds < 1:
+        raise ValueError("Acquisition rounds must be positive")
     base_probes = challenger.probes(transitions)
     history: list[dict] = []
     text: str | None = None
@@ -39,6 +32,8 @@ def acquire(builder: Builder, challenger: DeterministicChallenger, adjudicator: 
         if llm_challenger is not None:
             probes += llm_challenger.probes(transitions, text)
         report, _ = adjudicator.evaluate(text, probes)
+        if round_callback is not None:
+            round_callback(k, text, report, probes)
         history.append({"round": k, **report.rates(),
                         "mismatch_kinds": sorted({m.kind for m in report.mismatches}),
                         "feedback": [f"[{m.kind}] {m.operator}: {m.detail}" + (f" [x{m.count}]" if m.count > 1 else "")

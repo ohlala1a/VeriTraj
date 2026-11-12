@@ -1,5 +1,3 @@
-; family: clean
-; task: put a clean fork in drawer 1.
 (define (problem clean-fork-01)
   (:domain veritraj-alfworld)
   (:objects

@@ -1,4 +1,4 @@
-"""Shared fixtures: components built from the default config and the example trajectories."""
+"""Shared component and trajectory fixtures."""
 
 from pathlib import Path
 

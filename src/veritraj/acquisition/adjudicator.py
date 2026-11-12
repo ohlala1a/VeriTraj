@@ -1,17 +1,4 @@
-"""Adjudicator: deterministic, tool-based tests of a candidate domain.
-
-Stages (each reported separately, cf. Parse / Trace / Plan / Execute):
-  parse     the domain parses and passes static checks; every interface
-            operator exists with the right arity
-  trace     every development transition replays: the candidate accepts the
-            executed action and predicts exactly the observed successor
-  probes    candidate verdicts agree with the environment on challenger probes
-  plan      the candidate yields a plan for each development problem
-  execute   that plan runs in the environment and reaches the goal
-
-Only reproducible mismatches are returned to the Builder, each with the
-evidence needed to reproduce it.
-"""
+"""Adjudicator: deterministic, tool-based tests of a candidate domain."""
 
 from __future__ import annotations
 
@@ -102,7 +89,6 @@ class Adjudicator:
         rep.mismatches = _dedup(mm)[: self.max_feedback]
         return rep, dom
 
-    # -- stages ------------------------------------------------------------
     def _trace(self, dom: Domain, rep: Report, mm: list[Mismatch]) -> None:
         for tr in self.transitions:
             rep.trace_total += 1

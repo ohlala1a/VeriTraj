@@ -1,11 +1,4 @@
-"""S-expression reader and PDDL domain/problem parser.
-
-Supported fragment: :strips, :typing, :negative-preconditions, :equality is
-rejected. Preconditions and goals are conjunctions of (possibly negated)
-atoms; effects are conjunctions of add/delete atoms. Anything else raises
-PDDLError with the offending form, which the acquisition loop reports back to
-the Builder as a parse failure.
-"""
+"""S-expression reader and PDDL domain/problem parser."""
 
 from __future__ import annotations
 

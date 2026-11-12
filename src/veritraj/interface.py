@@ -1,14 +1,4 @@
-"""Action interface: generated text -> grounded operator + character span.
-
-Accepts two surface forms:
-  * functional:  "Action: PUT(mug_1, microwave_1)"
-  * ALFWorld:    "Action: put mug 1 in/on microwave 1"
-The command is searched for in the last "Action:" segment first, then in the
-last non-empty line. Arguments that the textual command leaves implicit (the
-current location for goto/toggle/examine) are filled from functional facts in
-the store. When no command can be located the record is a parse failure and
-its span covers the whole generation.
-"""
+"""Action interface: generated text -> grounded operator + character span."""
 
 from __future__ import annotations
 
@@ -37,6 +27,7 @@ _ALF_PATTERNS: list[tuple[str, re.Pattern]] = [
 ]
 _FUNC = re.compile(r"([A-Za-z][A-Za-z_\-]*)\s*\(([^()]*)\)")
 _ACTION_TAG = re.compile(r"action\s*[:：]", re.IGNORECASE)
+_END_MARKERS = re.compile(r"(?:(?:<\|(?:eot_id|im_end|endoftext|end_of_text)\|>|</s>)\s*)+$")
 
 
 @dataclass(slots=True)
@@ -83,16 +74,15 @@ class ActionInterface:
         self.domain = domain
         self.config = config or InterfaceConfig()
 
-    # -- parsing ---------------------------------------------------------
     def _region(self, text: str) -> tuple[int, str]:
         tags = list(_ACTION_TAG.finditer(text))
         if tags:
             start = tags[-1].end()
             end = text.find("\n", start)
             end = len(text) if end < 0 else end
-            return start, text[start:end]
+            return start, _END_MARKERS.sub("", text[start:end])
         lines = [(m.start(), m.group(0)) for m in re.finditer(r"[^\n]+", text) if m.group(0).strip()]
-        return lines[-1] if lines else (0, "")
+        return (lines[-1][0], _END_MARKERS.sub("", lines[-1][1])) if lines else (0, "")
 
     def parse(self, text: str, store: FactStore | None = None) -> ParsedAction:
         offset, region = self._region(text)
@@ -151,7 +141,6 @@ class ActionInterface:
                 out.append(next(it))
         return out
 
-    # -- rendering ---------------------------------------------------------
     @staticmethod
     def mention(obj: str) -> str:
         m = re.match(r"^(.*)_(\d+)$", obj)

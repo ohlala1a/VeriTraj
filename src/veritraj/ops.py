@@ -1,14 +1,4 @@
-"""Corpus-level operations behind the CLI.
-
-verify_corpus     run the per-trajectory worker over a logged corpus
-                  (optionally partitioned over a process pool by traj_id)
-evaluate_labels   label quality against latent applicability, IPR,
-                  violation categories, incremental-vs-recompute agreement
-acquisition_setup environment, transitions, probes and problems for the
-                  Builder-Challenger loop
-bench_length      per-record cost vs trajectory length (incremental vs recompute)
-bench_state       verification and heuristic cost vs state size
-"""
+"""Corpus-level operations behind the CLI."""
 
 from __future__ import annotations
 
@@ -31,7 +21,6 @@ from .planner import gbfs_plan
 from .verifier import Verifier
 
 
-# -- verification -------------------------------------------------------------
 _WORKER_COMPONENTS: Components | None = None
 
 
@@ -95,7 +84,6 @@ def verify_corpus(trajs: list[Trajectory], cfg_path=None, *, policy=None, heuris
     return out, stats
 
 
-# -- evaluation ---------------------------------------------------------------
 def evaluate_labels(trajs: list[Trajectory], verified: dict[str, list[VerifiedRecord]],
                     comps: Components, recomputed: dict[str, list[VerifiedRecord]] | None = None) -> dict:
     all_labels: list[VerifiedRecord] = []
@@ -116,7 +104,6 @@ def evaluate_labels(trajs: list[Trajectory], verified: dict[str, list[VerifiedRe
     return out
 
 
-# -- acquisition --------------------------------------------------------------
 @dataclass
 class AcquisitionSetup:
     env: ReferenceEnvironment
@@ -127,7 +114,10 @@ class AcquisitionSetup:
     interface_ops: dict[str, int] = field(default_factory=dict)
 
 
-def acquisition_setup(comps: Components, trajs: list[Trajectory], acceptance_seed: int = 7000) -> AcquisitionSetup:
+def acquisition_setup(comps: Components, trajs: list[Trajectory], acceptance_seed: int = 7000,
+                      acceptance_problems: list | None = None) -> AcquisitionSetup:
+    if acceptance_problems is None and comps.domain.name != "veritraj-alfworld":
+        raise ValueError("This domain requires explicit acceptance_problems")
     env = ReferenceEnvironment(comps.domain)
     objects: dict[str, dict[str, str]] = {}
     transitions: list[DevTransition] = []
@@ -138,16 +128,24 @@ def acquisition_setup(comps: Components, trajs: list[Trajectory], acceptance_see
         objects[traj.task_id] = dict(prob.objects)
         for tr in replay(comps.domain, prob, comps.interface, traj).transitions:
             transitions.append(DevTransition(tr.state, tr.action.name, tr.action.args, tr.next_state, traj.task_id))
-    acceptance = []
-    for i, fam in enumerate(FAMILIES):
-        seed = acceptance_seed + 10 * i
-        while True:
-            spec = generate_task(fam, seed)
-            if gbfs_plan(comps.domain, spec.problem, max_expansions=5000) is not None:
-                break
-            seed += 1
-        objects[spec.name] = dict(spec.problem.objects)
-        acceptance.append(spec.problem)
+    acceptance = list(acceptance_problems or [])
+    if acceptance_problems is None:
+        for i, fam in enumerate(FAMILIES):
+            seed = acceptance_seed + 10 * i
+            for attempt in range(100):
+                spec = generate_task(fam, seed + attempt)
+                if gbfs_plan(comps.domain, spec.problem, max_expansions=5000) is not None:
+                    acceptance.append(spec.problem)
+                    break
+            else:
+                raise ValueError(f"No solvable acceptance task for {fam} in 100 attempts")
+    if not acceptance:
+        raise ValueError("Acceptance problems must not be empty")
+    dev_names = {problem.name for problem in problems.values()}
+    for problem in acceptance:
+        if problem.domain_name != comps.domain.name or problem.name in dev_names:
+            raise ValueError("Acceptance problems require the same domain and distinct development-task names")
+        objects[problem.name] = dict(problem.objects)
     ops = {name: a.arity for name, a in comps.domain.actions.items()}
     return AcquisitionSetup(env, objects, transitions, list(problems.values()), acceptance, ops)
 
@@ -158,7 +156,6 @@ def make_adjudicators(setup: AcquisitionSetup) -> tuple[Adjudicator, Adjudicator
     return dev, acc, DeterministicChallenger(setup.env, setup.objects)
 
 
-# -- benchmarks ---------------------------------------------------------------
 def tile(traj: Trajectory, length: int) -> Trajectory:
     """Timing harness: repeat the records of `traj` up to `length` records."""
     recs = []

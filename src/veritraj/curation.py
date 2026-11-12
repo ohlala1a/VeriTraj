@@ -1,19 +1,4 @@
-"""Offline curation of a logged corpus into a supervised fine-tuning set.
-
-Strategies (all read the same verified table):
-  none                 every trajectory, every action span is a target
-  outcome              successful trajectories only
-  trajectory           trajectories without any flagged record
-  outcome_trajectory   both of the above
-  record               every trajectory; supported spans are targets,
-                       flagged / unparsed spans are masked out
-  record_weighted      as `record`, weight 1 for successful and omega for
-                       failed trajectories
-
-Reasoning text outside the action span stays in the completion but is not a
-target. Prompts are rebuilt from the logged observations with the same
-template the policy used (`build_prompt`).
-"""
+"""Outcome, trajectory and record-level curation for action-span training."""
 
 from __future__ import annotations
 
@@ -38,8 +23,9 @@ def task_of(traj: Trajectory) -> str:
     return m.group(1).strip() if m else ""
 
 
-def build_prompt(task: str, history: list[tuple[str, str]], observation: str, window: int = 6) -> str:
-    parts = [SYSTEM, f"Task: {task}"]
+def build_prompt(task: str, history: list[tuple[str, str]], observation: str, window: int = 6,
+                 system: str = SYSTEM) -> str:
+    parts = [system, f"Task: {task}"]
     for obs, act in history[-window:] if window > 0 else []:
         parts.append(f"Observation: {obs}\n{act}")
     parts.append(f"Observation: {observation}")
@@ -74,6 +60,8 @@ def _keep(traj: Trajectory, labels: list[VerifiedRecord], strategy: str) -> bool
 
 def curate(trajs: list[Trajectory], verified: dict[str, list[VerifiedRecord]], strategy: str,
            omega: float = 0.5, window: int = 6) -> CurationResult:
+    from .policy.prompts import policy_prompt
+
     if strategy not in STRATEGIES:
         raise ValueError(f"strategy must be one of {STRATEGIES}")
     res = CurationResult(strategy)
@@ -96,7 +84,7 @@ def curate(trajs: list[Trajectory], verified: dict[str, list[VerifiedRecord]], s
                 res.records_target += 1
                 res.examples.append({
                     "id": f"{traj.traj_id}#{rec.t}",
-                    "prompt": rec.prompt or build_prompt(task, history, rec.observation, window),
+                    "prompt": rec.prompt or policy_prompt(task, history, rec.observation, window, traj.environment),
                     "completion": rec.generation,
                     "target_char_spans": [list(lab.char_span)],
                     "weight": weight,

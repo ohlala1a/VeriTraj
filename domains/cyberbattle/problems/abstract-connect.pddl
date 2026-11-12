@@ -1,0 +1,7 @@
+(define (problem abstract-connect)
+ (:domain veritraj-cyberbattle)
+ (:objects node_0 node_1 - node credential_0 - credential service_0 - service)
+ (:init (discovered node_0) (discovered node_1) (owned node_0)
+        (reachable node_0 node_1) (has-credential credential_0)
+        (accepts node_1 service_0 credential_0))
+ (:goal (and (owned node_1))))

@@ -1,10 +1,4 @@
-"""Grounding of action schemas.
-
-`ground_action` binds one schema to concrete arguments and reports type
-mismatches instead of raising, because a mistyped proposal is a record-level
-violation, not a parser error. `ground_all` enumerates every type-correct
-instance for the relaxed-planning heuristics and the planner.
-"""
+"""Grounding of action schemas."""
 
 from __future__ import annotations
 
@@ -23,7 +17,6 @@ class TypeIssue:
     actual: str | None
 
     def as_atom(self) -> Atom:
-        # Rendered in witnesses as e.g. receptacle(apple_1).
         return Atom(self.expected, (self.obj,))
 
 
@@ -72,11 +65,7 @@ def objects_by_type(domain: Domain, object_types: dict[str, str]) -> dict[str, l
 def ground_all(domain: Domain, object_types: dict[str, str],
                static_true: set[Atom] | None = None,
                static_preds: Iterable[str] = ()) -> list[GroundAction]:
-    """Enumerate type-correct ground actions.
-
-    If `static_true` and `static_preds` are given, instances whose static
-    positive preconditions are false are pruned (standard static pruning).
-    """
+    """Enumerate type-correct ground actions."""
     by_type = objects_by_type(domain, object_types)
     static_preds = set(static_preds)
     out = []

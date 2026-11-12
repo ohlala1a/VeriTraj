@@ -1,11 +1,4 @@
-"""Builder: produces candidate domains D_k.
-
-FileBuilder replays drafts stored on disk (round0.pddl, round1.pddl, ...),
-which makes the loop reproducible without an API. LLMBuilder drafts and
-repairs the domain with an OpenAI-compatible model from the documentation,
-the action interface, sample development transitions and the adjudicator's
-feedback.
-"""
+"""Build and repair PDDL domains from transitions and executable feedback."""
 
 from __future__ import annotations
 
@@ -93,5 +86,6 @@ class LLMBuilder:
         text = extract_block(out, "pddl") or extract_block(out, "lisp") or extract_block(out)
         if text is None:
             raise LLMError("builder response contains no code block")
-        self.log.append({"round": round_idx, "prompt_chars": len(prompt), "response_chars": len(out)})
+        self.log.append({"round": round_idx, "prompt_chars": len(prompt), "response_chars": len(out),
+                         "prompt": prompt, "response": out})
         return text

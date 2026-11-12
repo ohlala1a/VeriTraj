@@ -1,13 +1,4 @@
-"""Span-level advantages for group-relative policy optimization (online mode).
-
-  A_bar_i = (R_i - mean(R_1:G)) / (std(R_1:G) + eps)                    (3)
-  A_i,t   = v A_bar_i - (1 - v) lambda_hard + v lambda_pot r_prog      (4)
-
-A_i,t is broadcast to the tokens of span I_i,t; every other token is masked.
-`clipped_objective` is the per-batch value of Eq. (5) for given log-probs,
-written in plain Python as the reference for the training code (the
-training loop itself is not part of this release).
-"""
+"""Group-normalized returns and action-span advantages."""
 
 from __future__ import annotations
 
@@ -66,10 +57,7 @@ def token_advantages(n_tokens: int, spans: list[tuple[int, int]], advs: list[flo
 
 def clipped_objective(logp_new: list[float], logp_old: list[float], logp_ref: list[float],
                       adv: list[float], mask: list[int], eps_clip: float = 0.2, beta: float = 0.01) -> float:
-    """Eq. (5) on one batch: mean over masked tokens of the clipped surrogate minus beta*KL.
 
-    KL uses the k3 estimator exp(ref-new) - (ref-new) - 1 on the same tokens.
-    """
     n = sum(mask)
     if n == 0:
         return 0.0

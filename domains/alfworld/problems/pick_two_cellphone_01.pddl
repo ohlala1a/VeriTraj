@@ -1,5 +1,3 @@
-; family: pick_two
-; task: put two cellphone in shelf 1.
 (define (problem pick-two-cellphone-01)
   (:domain veritraj-alfworld)
   (:objects

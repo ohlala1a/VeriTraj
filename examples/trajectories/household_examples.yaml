@@ -1,15 +1,3 @@
-# Hand-written example trajectories for the household domain.
-# They illustrate the record format and the cases the verifier must handle;
-# they are not experimental data. `veritraj check-trajectories` replays each
-# one against its PDDL problem and confirms the `executed` and
-# `latent_applicable` fields.
-#
-# heat-mug-01/a  clean successful episode
-# heat-mug-01/b  successful, with a stale-state proposal (put into a closed microwave)
-# heat-mug-01/c  failed: wrong object, closed cabinet, then repeated unreachable take
-# examine-book-01/a   examine before turning the lamp on
-# clean-fork-01/a     functional command format, unresolved surface name, nonexistent object, parse failure
-# pick-two-cellphone-01/a  take from a receptacle the agent is not at
 
 - traj_id: heat-mug-01/a
   task_id: heat-mug-01

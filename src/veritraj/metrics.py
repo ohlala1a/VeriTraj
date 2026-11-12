@@ -1,11 +1,4 @@
-"""Evaluation metrics.
-
-* Label quality against latent applicability (positive class: invalid),
-  over parsed proposals only.
-* IPR: fraction of parsed proposals that are inapplicable in the latent state.
-* Violation categories from witnesses (affordance / reachability / state /
-  sequence), by priority over the missing literals of each flagged record.
-"""
+"""Evaluation metrics."""
 
 from __future__ import annotations
 

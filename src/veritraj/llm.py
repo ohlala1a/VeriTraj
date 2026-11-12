@@ -1,12 +1,4 @@
-"""Minimal client for OpenAI-compatible chat endpoints (DeepSeek, GLM, vLLM, ...).
-
-Configured from the environment:
-  VERITRAJ_LLM_BASE_URL   e.g. https://api.deepseek.com/v1
-  VERITRAJ_LLM_API_KEY
-  VERITRAJ_LLM_MODEL
-Uses only the standard library. Used by the LLM policy, the llm_impute
-grounding policy, the LLM-judge baseline and the Builder/Challenger roles.
-"""
+"""OpenAI-compatible chat client configured through VERITRAJ_LLM environment variables."""
 
 from __future__ import annotations
 

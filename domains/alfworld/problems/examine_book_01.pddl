@@ -1,5 +1,3 @@
-; family: examine
-; task: look at book under the desklamp.
 (define (problem examine-book-01)
   (:domain veritraj-alfworld)
   (:objects

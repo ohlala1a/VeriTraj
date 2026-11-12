@@ -1,10 +1,4 @@
-"""Replay a logged trajectory against its PDDL problem (closed-world latent state).
-
-Used for three things: (1) consistency checks of logged files (`executed`
-must be applicable in the latent state, `latent_applicable` must match);
-(2) ground truth for label-quality evaluation; (3) development transitions
-(s, a, s') for constraint acquisition. Nothing here is used for labeling.
-"""
+"""Replay a logged trajectory against its PDDL problem (closed-world latent state)."""
 
 from __future__ import annotations
 

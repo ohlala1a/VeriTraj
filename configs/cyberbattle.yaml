@@ -1,0 +1,17 @@
+﻿domain: domains/cyberbattle/domain.pddl
+adapter:
+  kind: cyberbattle
+store: {}
+interface: {}
+progress:
+  heuristic: hff
+  gamma: 0.99
+advantage:
+  lambda_hard: 2.0
+  lambda_pot: 0.2
+  eps_norm: 1.0e-6
+  gamma: 0.99
+curation:
+  omega: 0.5
+  history_window: 6
+tokenizer: regex

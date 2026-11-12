@@ -1,4 +1,4 @@
-"""Builder-Challenger loop on the shipped drafts, plus an LLM builder with a fixed-reply client."""
+"""Domain acquisition and endpoint-client tests."""
 
 import pytest
 

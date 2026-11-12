@@ -1,17 +1,15 @@
-# VeriTraj config for the ALFWorld-style household domain.
-# Paths are relative to the repository root.
 
 domain: domains/alfworld/domain.pddl
 problems_dir: domains/alfworld/problems
 
 store:
   functional:
-    at: [0]            # at(agent, ?p): one location per agent
+    at: [0]
   mutex:
     - [open, closed]
 
 interface:
-  implicit:            # argument index -> functional fact that supplies it
+  implicit:
     goto: {0: [at, agent]}
     toggle: {1: [at, agent]}
     examine: {2: [at, agent]}
@@ -59,7 +57,7 @@ interface:
     toilet paper: toiletpaper
 
 adapter:
-  policy: conservative       # conservative | rule_norm | llm_impute
+  policy: conservative
   initial_facts: [handempty]
   lexicon:
     aliases: *aliases
@@ -96,7 +94,7 @@ adapter:
             peppershaker, pillow, plate, pot, potato, remotecontrol, saltshaker, soapbar,
             soapbottle, spatula, spoon, spraybottle, statue, teddybear, tissuebox, toiletpaper,
             tomato, towel, vase, watch, wateringcan, winebottle]
-    paraphrases:             # used by rule_norm / llm_impute only
+    paraphrases:
       "you reach ": "you arrive at "
       "you are now at ": "you arrive at "
       "you walk to ": "you arrive at "
@@ -111,7 +109,7 @@ adapter:
       "you place the ": "you put the "
 
 progress:
-  heuristic: hff              # hff | hadd | hmax | goalcount
+  heuristic: hff
   gamma: 0.99
   cache_size: 65536
 
@@ -125,4 +123,4 @@ curation:
   omega: 0.5
   history_window: 6
 
-tokenizer: regex              # regex | hf:<model name or path>
+tokenizer: regex

@@ -1,19 +1,4 @@
-"""Challenger: positive and minimally changed negative probes.
-
-Deterministic challenger (default): for every development transition (s, a)
-  * positive probe   (s, a)
-  * state probes     (s - {f}, a) for each fact f that mentions an argument
-                     of a (or is 0-ary), i.e. one fact removed
-  * type probes      (s[x -> y], a[x -> y]) where one argument x is replaced
-                     by an object y of a different type, consistently in the
-                     state, so the probe differs from the positive one only
-                     in the argument's type
-The environment decides the expected verdict of every probe; the probe set is
-therefore free of labeling errors by construction.
-
-LLM challenger (optional): asks a model for additional probes as JSON and
-keeps only those the environment can execute.
-"""
+"""Positive, state-perturbation and type-perturbation probes."""
 
 from __future__ import annotations
 
