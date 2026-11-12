@@ -1,0 +1,17 @@
+model: Qwen/Qwen3-8B
+components: configs/alfworld.yaml
+output_dir: runs/collection/alfworld
+environment:
+  kind: alfworld
+  tasks: []
+  game_files: {}
+tasks: []
+split: train
+seed: 0
+group_size: 8
+max_steps: 50
+gate: true
+generation:
+  max_new_tokens: 128
+  do_sample: true
+  temperature: 0.8

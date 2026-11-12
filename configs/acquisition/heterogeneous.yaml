@@ -1,0 +1,12 @@
+components: configs/alfworld.yaml
+documentation: examples/acquisition/task_documentation.md
+rounds: 3
+seed: 0
+builder:
+  prefix: VERITRAJ_LLM
+  model: deepseek-v4-flash
+  temperature: 0.2
+challenger:
+  prefix: VERITRAJ_CHALLENGER
+  model: glm-5.2
+  probes_per_transition: 4

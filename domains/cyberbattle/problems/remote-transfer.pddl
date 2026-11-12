@@ -1,0 +1,6 @@
+(define (problem remote-transfer)
+ (:domain veritraj-cyberbattle)
+ (:objects node_0 node_1 - node capability_0 - capability)
+ (:init (owned node_0) (discovered node_0) (discovered node_1)
+        (reachable node_0 node_1) (remote-available node_1 capability_0))
+ (:goal (and (owned node_1))))
